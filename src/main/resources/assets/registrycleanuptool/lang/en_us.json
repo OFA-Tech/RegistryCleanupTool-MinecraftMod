@@ -1,0 +1,13 @@
+{
+  "itemGroup.registrycleanuptool": "Example Mod Tab",
+  "block.registrycleanuptool.example_block": "Example Block",
+  "item.registrycleanuptool.example_item": "Example Item",
+
+  "registrycleanuptool.configuration.title": "Registry Cleanup Tool Configs",
+  "registrycleanuptool.configuration.section.registrycleanuptool.common.toml": "Registry Cleanup Tool Configs",
+  "registrycleanuptool.configuration.section.registrycleanuptool.common.toml.title": "Registry Cleanup Tool Configs",
+  "registrycleanuptool.configuration.items": "Item List",
+  "registrycleanuptool.configuration.logDirtBlock": "Log Dirt Block",
+  "registrycleanuptool.configuration.magicNumberIntroduction": "Magic Number Text",
+  "registrycleanuptool.configuration.magicNumber": "Magic Number"
+}
