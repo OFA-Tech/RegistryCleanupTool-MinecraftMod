@@ -1,56 +1,27 @@
 # Registry Cleanup Tool (NeoForge 1.21.1)
 
-Server-side utility mod for worlds that contain orphaned registry content from removed mods.
+Registry Cleanup Tool now uses **same-session, log-triggered raw chunk NBT cleanup**.
 
 ## What it does
-- Adds `/rct` admin commands to scan and clean blocks/entities in loaded chunk areas.
-- Registers temporary placeholder blocks under exact IDs (`dwm:titanium_ore`, `rftoolsbase:dimensionalshard_overworld`) so affected chunks can deserialize, then be cleaned.
+- Does **not** register placeholder blocks/entities.
+- Does **not** mutate registries at runtime (registries are frozen after startup).
+- Watches `ChunkSerializer` recoverable errors for unknown block registry keys while chunks load.
+- Captures section coordinates `[chunkX, sectionY, chunkZ]` plus missing block IDs.
+- Patches raw chunk NBT `sections[].block_states.palette[]` entries, replacing matching missing IDs with `minecraft:air`.
 
-## What it does not do
-- Not a client ghost-block visual fix.
-- Not offline region/NBT surgery.
-- Missing entity IDs already dropped during load are out of scope for v1.
-
-## Why placeholders are needed
-Vanilla commands cannot target unregistered block IDs. If the ID is missing from registries, chunk load substitutes defaults and direct command targeting is impossible. This mod can temporarily register known IDs exactly, then replace them safely.
-
-## Safety first
-Back up world before cleanup. Run scan first.
-
-## Installation
-1. Build jar with `./gradlew build`.
-2. Place jar on dedicated server `mods/`.
-3. Start server and run `/rct status`.
-
-## Example config (common)
-`blocksToClean=["dwm:titanium_ore","rftoolsbase:dimensionalshard_overworld"]`
-`entitiesToClean=[]`
-`replacementBlock="minecraft:air"`
-`dryRunByDefault=true`
-`maxChunksRadius=8`
-`maxBlocksChangedPerCommand=500000`
-`includeKnownPlaceholderBlocks=true`
-`logCleanupDetails=true`
+## Safety
+- **Backup is mandatory** before cleanup.
+- If a chunk is already loaded, in-memory fallback state may remain visible until unload/reload.
+- Restart is not required in the ideal path, but if unload/reload is not possible, restart may still be needed to force re-read from disk.
+- Do not use `/save-all` before patched chunks are safely reloaded.
 
 ## Commands
 - `/rct status`
-- `/rct scan blocks radius <chunks>`
-- `/rct clean blocks radius <chunks>`
-- `/rct scan entities radius <chunks>`
-- `/rct clean entities radius <chunks>`
-- `/rct scan all radius <chunks>`
-- `/rct clean all radius <chunks>`
-- `/rct scan blocks chunk <chunkX> <chunkZ>`
-- `/rct clean blocks chunk <chunkX> <chunkZ>`
-- `/rct save`
+- `/rct watch start`
+- `/rct watch stop`
+- `/rct watch list`
+- `/rct scan radius <chunks>`
+- `/rct cleanlog radius <chunks>`
+- `/rct cleanlog captured`
+- `/rct captured clear`
 
-## Suggested workflow
-1. Back up world
-2. Install mod
-3. Start server
-4. `/rct status`
-5. `/rct scan blocks radius 8`
-6. `/rct clean blocks radius 8`
-7. `/save-all flush`
-8. Stop server
-9. Remove mod if cleanup is complete
