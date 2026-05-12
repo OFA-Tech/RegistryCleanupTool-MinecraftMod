@@ -18,10 +18,7 @@ import net.ofatech.registrycleanuptool.config.RegistryCleanupConfig;
 
 @EventBusSubscriber(modid = RegistryCleanupTool.MODID, bus = EventBusSubscriber.Bus.MOD)
 public final class PlaceholderRegistry {
-    public static final List<ResourceLocation> DEFAULT_PLACEHOLDER_BLOCK_IDS = List.of(
-            ResourceLocation.fromNamespaceAndPath("dwm", "titanium_ore"),
-            ResourceLocation.fromNamespaceAndPath("rftoolsbase", "dimensionalshard_overworld")
-    );
+    public static final List<ResourceLocation> DEFAULT_PLACEHOLDER_BLOCK_IDS = List.of();
     private static final Map<ResourceLocation, Block> PLACEHOLDERS = new HashMap<>();
 
     private PlaceholderRegistry() {}
