@@ -1,25 +1,56 @@
+# Registry Cleanup Tool (NeoForge 1.21.1)
 
-Installation information
-=======
+Server-side utility mod for worlds that contain orphaned registry content from removed mods.
 
-This template repository can be directly cloned to get you started with a new
-mod. Simply create a new repository cloned from this one, by following the
-instructions provided by [GitHub](https://docs.github.com/en/repositories/creating-and-managing-repositories/creating-a-repository-from-a-template).
+## What it does
+- Adds `/rct` admin commands to scan and clean blocks/entities in loaded chunk areas.
+- Registers temporary placeholder blocks under exact IDs (`dwm:titanium_ore`, `rftoolsbase:dimensionalshard_overworld`) so affected chunks can deserialize, then be cleaned.
 
-Once you have your clone, simply open the repository in the IDE of your choice. The usual recommendation for an IDE is either IntelliJ IDEA or Eclipse.
+## What it does not do
+- Not a client ghost-block visual fix.
+- Not offline region/NBT surgery.
+- Missing entity IDs already dropped during load are out of scope for v1.
 
-If at any point you are missing libraries in your IDE, or you've run into problems you can
-run `gradlew --refresh-dependencies` to refresh the local cache. `gradlew clean` to reset everything 
-{this does not affect your code} and then start the process again.
+## Why placeholders are needed
+Vanilla commands cannot target unregistered block IDs. If the ID is missing from registries, chunk load substitutes defaults and direct command targeting is impossible. This mod can temporarily register known IDs exactly, then replace them safely.
 
-Mapping Names:
-============
-By default, the MDK is configured to use the official mapping names from Mojang for methods and fields 
-in the Minecraft codebase. These names are covered by a specific license. All modders should be aware of this
-license. For the latest license text, refer to the mapping file itself, or the reference copy here:
-https://github.com/NeoForged/NeoForm/blob/main/Mojang.md
+## Safety first
+Back up world before cleanup. Run scan first.
 
-Additional Resources: 
-==========
-Community Documentation: https://docs.neoforged.net/  
-NeoForged Discord: https://discord.neoforged.net/
+## Installation
+1. Build jar with `./gradlew build`.
+2. Place jar on dedicated server `mods/`.
+3. Start server and run `/rct status`.
+
+## Example config (common)
+`blocksToClean=["dwm:titanium_ore","rftoolsbase:dimensionalshard_overworld"]`
+`entitiesToClean=[]`
+`replacementBlock="minecraft:air"`
+`dryRunByDefault=true`
+`maxChunksRadius=8`
+`maxBlocksChangedPerCommand=500000`
+`includeKnownPlaceholderBlocks=true`
+`logCleanupDetails=true`
+
+## Commands
+- `/rct status`
+- `/rct scan blocks radius <chunks>`
+- `/rct clean blocks radius <chunks>`
+- `/rct scan entities radius <chunks>`
+- `/rct clean entities radius <chunks>`
+- `/rct scan all radius <chunks>`
+- `/rct clean all radius <chunks>`
+- `/rct scan blocks chunk <chunkX> <chunkZ>`
+- `/rct clean blocks chunk <chunkX> <chunkZ>`
+- `/rct save`
+
+## Suggested workflow
+1. Back up world
+2. Install mod
+3. Start server
+4. `/rct status`
+5. `/rct scan blocks radius 8`
+6. `/rct clean blocks radius 8`
+7. `/save-all flush`
+8. Stop server
+9. Remove mod if cleanup is complete
