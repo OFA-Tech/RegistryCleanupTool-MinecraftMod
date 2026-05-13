@@ -1,43 +1,61 @@
 package net.ofatech.registrycleanuptool.region;
 
 import java.io.Closeable;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.file.Path;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtIo;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.chunk.storage.RegionFileStorage;
+import net.minecraft.world.level.chunk.storage.RegionFile;
 import net.minecraft.world.level.chunk.storage.RegionStorageInfo;
 import net.minecraft.world.level.storage.LevelResource;
 
 public final class RegionChunkNbtAccess implements Closeable {
-    private final WritableRegionFileStorage storage;
+    private final Path regionPath;
+    private final RegionStorageInfo storageInfo;
 
     public RegionChunkNbtAccess(ServerLevel level) {
-        Path regionPath = getRegionPath(level);
-        this.storage = new WritableRegionFileStorage(
-                new RegionStorageInfo("chunk", level.dimension(), "chunk"),
-                regionPath,
-                false
-        );
+        this.regionPath = getRegionPath(level);
+        this.storageInfo = new RegionStorageInfo("chunk", level.dimension(), "chunk");
     }
 
     public CompoundTag read(ChunkPos pos) throws IOException {
-        return storage.read(pos);
+        Path regionFilePath = resolveRegionFilePath(regionPath, pos);
+        try (RegionFile regionFile = new RegionFile(storageInfo, regionFilePath, regionPath, false)) {
+            try (DataInputStream input = regionFile.getChunkDataInputStream(pos)) {
+                return input == null ? null : NbtIo.read(input);
+            }
+        }
     }
 
     public void write(ChunkPos pos, CompoundTag tag) throws IOException {
-        storage.writePublic(pos, tag);
+        Path regionFilePath = resolveRegionFilePath(regionPath, pos);
+        try (RegionFile regionFile = new RegionFile(storageInfo, regionFilePath, regionPath, false)) {
+            try (DataOutputStream output = regionFile.getChunkDataOutputStream(pos)) {
+                NbtIo.write(tag, output);
+            }
+            regionFile.flush();
+        }
     }
 
     @Override
-    public void close() throws IOException {
-        storage.close();
+    public void close() {
+        // No-op: RegionFile instances are opened per-operation and closed via try-with-resources.
     }
 
-    private static Path getRegionPath(ServerLevel level) {
+    public static Path resolveRegionFilePath(Path regionDirectory, ChunkPos chunkPos) {
+        int regionX = chunkPos.x >> 5;
+        int regionZ = chunkPos.z >> 5;
+        String filename = "r." + regionX + "." + regionZ + ".mca";
+        return regionDirectory.resolve(filename);
+    }
+
+    static Path getRegionPath(ServerLevel level) {
         ResourceKey<Level> dimension = level.dimension();
         Path worldRoot = level.getServer().getWorldPath(LevelResource.ROOT);
 
@@ -58,15 +76,5 @@ public final class RegionChunkNbtAccess implements Closeable {
                 .resolve(dimension.location().getNamespace())
                 .resolve(dimension.location().getPath())
                 .resolve("region");
-    }
-
-    private static final class WritableRegionFileStorage extends RegionFileStorage {
-        private WritableRegionFileStorage(RegionStorageInfo info, Path folder, boolean sync) {
-            super(info, folder, sync);
-        }
-
-        private void writePublic(ChunkPos pos, CompoundTag tag) throws IOException {
-            super.write(pos, tag);
-        }
     }
 }
