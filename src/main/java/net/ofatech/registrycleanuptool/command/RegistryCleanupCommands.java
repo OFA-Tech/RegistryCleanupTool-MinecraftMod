@@ -4,6 +4,7 @@ import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
+import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.ChunkPos;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -46,7 +47,7 @@ public final class RegistryCleanupCommands {
     private static int scanRadius(CommandSourceStack s, int radius){
         LogTriggeredCleanupService srv=RegistryCleanupTool.SERVICE;
         if(!srv.watcher().isActive()) srv.watcher().start();
-        var scanned=srv.forceLoadRadius(s.getLevel(), new ChunkPos(s.getPosition()), radius, RegistryCleanupConfig.MAX_CHUNKS_PER_COMMAND.get());
+        var scanned=srv.forceLoadRadius(s.getLevel(), new ChunkPos(BlockPos.containing(s.getPosition())), radius, RegistryCleanupConfig.MAX_CHUNKS_PER_COMMAND.get());
         var occ=srv.store().snapshot(s.getLevel().dimension(), scanned);
         msg(s,"Chunks loaded/scanned: "+scanned.size());
         msg(s,"Missing block IDs: "+occ.stream().map(o->o.missingBlockId().toString()).distinct().count());

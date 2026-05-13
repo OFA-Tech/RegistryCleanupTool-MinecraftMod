@@ -17,7 +17,7 @@ public final class RegionChunkNbtAccess {
     public RegionChunkNbtAccess(ServerLevel level) {
         this.level = level;
         Path regionPath = level.getChunkSource().chunkMap.getStorageFolder().resolve("region");
-        this.storage = new RegionFileStorage(new RegionStorageInfo(level.dimension().location(), regionPath, "chunk"), regionPath, false);
+        this.storage = new RegionFileStorage(new RegionStorageInfo(level.dimension().location().toString(), regionPath, "chunk"), regionPath, false);
     }
 
     public CompoundTag read(ChunkPos pos) throws IOException { return storage.read(pos); }

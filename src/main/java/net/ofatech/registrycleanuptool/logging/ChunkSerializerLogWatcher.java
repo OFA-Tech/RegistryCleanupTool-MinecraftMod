@@ -5,21 +5,20 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
 import net.ofatech.registrycleanuptool.discovery.MissingBlockCaptureStore;
-import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.Appender;
-import org.apache.logging.log4j.core.Filter;
 import org.apache.logging.log4j.core.Layout;
 import org.apache.logging.log4j.core.LogEvent;
 import org.apache.logging.log4j.core.Logger;
 import org.apache.logging.log4j.core.appender.AbstractAppender;
 import org.apache.logging.log4j.core.config.Property;
-import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.apache.logging.log4j.core.LoggerContext;
+
+import static net.minecraft.world.level.Level.*;
 
 public final class ChunkSerializerLogWatcher {
     private final MissingRegistryLogParser parser = new MissingRegistryLogParser();
     private final MissingBlockCaptureStore store;
-    private volatile ResourceKey<Level> currentDimension = Level.OVERWORLD;
+    private volatile ResourceKey<Level> currentDimension = OVERWORLD;
     private Appender appender;
     private boolean active;
 
